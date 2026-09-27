@@ -30,8 +30,8 @@ function animateValue(el, endValue, duration) {
   requestAnimationFrame(step);
 }
 
-// Floating confirmation toast — used right after a partner is added or a
-// delivery is assigned, on top of the inline form-success text.
+// Center-screen confirmation toast — used right after a partner is added
+// or a delivery is assigned, on top of the inline form-success text.
 function ensureToastStack() {
   let stack = document.getElementById("toastStack");
   if (!stack) {
@@ -45,7 +45,7 @@ function ensureToastStack() {
   return stack;
 }
 
-function showToast(title, message, duration) {
+function showToast(title, message) {
   const stack = ensureToastStack();
 
   const toast = document.createElement("div");
@@ -60,6 +60,7 @@ function showToast(title, message, duration) {
 
   stack.appendChild(toast);
 
+  // No auto-dismiss — stays up until the person closes it with the ×.
   function dismiss() {
     if (toast.dataset.leaving) return;
     toast.dataset.leaving = "true";
@@ -68,7 +69,6 @@ function showToast(title, message, duration) {
   }
 
   toast.querySelector(".toast-dismiss").addEventListener("click", dismiss);
-  setTimeout(dismiss, duration || 4200);
 }
 
 // ---- Auth guard ----

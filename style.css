@@ -648,36 +648,39 @@ input:focus, select:focus{
 .form-success{ color: var(--ok); }
 
 /* ============================================================
-   TOAST — floating confirmation after an action completes
-   (partner added, delivery assigned). Same glass-panel language
-   as the rest of the console, with the status-dot accent color
-   pulled onto a left rail like the partner cards use.
+   TOAST — center-screen confirmation after an action completes
+   (partner added, delivery assigned). Stays up until the person
+   closes it with the × — no auto-dismiss. Same glass-panel
+   language as the rest of the console, with the status-dot
+   accent color pulled onto a left rail like the partner cards use.
    ============================================================ */
 
 .toast-stack{
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 200;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 14px;
   pointer-events: none;
 }
 
 .toast{
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  width: min(340px, calc(100vw - 48px));
-  padding: 14px 16px;
+  gap: 16px;
+  width: min(460px, calc(100vw - 48px));
+  padding: 26px 28px;
   background: var(--surface-raised);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-left: 3px solid var(--ok);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-lift);
+  border-left: 4px solid var(--ok);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift), 0 0 46px rgba(51,214,163,0.14);
   pointer-events: auto;
   animation: toastIn 0.4s var(--ease) both;
 }
@@ -685,8 +688,8 @@ input:focus, select:focus{
 .toast.toast-leaving{ animation: toastOut 0.3s var(--ease) both; }
 
 .toast-icon{
-  width: 26px;
-  height: 26px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   border-radius: 50%;
   display: flex;
@@ -697,29 +700,30 @@ input:focus, select:focus{
   box-shadow: 0 0 0 1px rgba(51,214,163,0.25) inset;
 }
 
-.toast-icon svg{ width: 14px; height: 14px; }
+.toast-icon svg{ width: 23px; height: 23px; }
 
-.toast-body{ flex: 1; min-width: 0; }
+.toast-body{ flex: 1; min-width: 0; padding-top: 4px; }
 
 .toast-title{
   font-family: var(--font-display);
-  font-size: 13.5px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--text);
-  letter-spacing: -0.1px;
+  letter-spacing: -0.2px;
 }
 
 .toast-message{
-  font-size: 12.5px;
+  font-size: 15px;
+  line-height: 1.45;
   color: var(--text-soft);
-  margin-top: 2px;
+  margin-top: 6px;
   overflow-wrap: anywhere;
 }
 
 .toast-dismiss{
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -727,8 +731,8 @@ input:focus, select:focus{
   border: none;
   color: var(--text-faint);
   cursor: pointer;
-  border-radius: 6px;
-  font-size: 15px;
+  border-radius: 8px;
+  font-size: 20px;
   line-height: 1;
   transition: color 0.15s ease, background 0.15s ease;
 }
@@ -736,18 +740,13 @@ input:focus, select:focus{
 .toast-dismiss:hover{ color: var(--text); background: rgba(255,255,255,0.06); }
 
 @keyframes toastIn{
-  from{ opacity: 0; transform: translateX(28px) scale(0.97); }
-  to{ opacity: 1; transform: translateX(0) scale(1); }
+  from{ opacity: 0; transform: scale(0.92); }
+  to{ opacity: 1; transform: scale(1); }
 }
 
 @keyframes toastOut{
-  from{ opacity: 1; transform: translateX(0) scale(1); }
-  to{ opacity: 0; transform: translateX(28px) scale(0.97); }
-}
-
-@media (max-width: 860px){
-  .toast-stack{ top: 72px; right: 14px; left: 14px; }
-  .toast{ width: 100%; }
+  from{ opacity: 1; transform: scale(1); }
+  to{ opacity: 0; transform: scale(0.94); }
 }
 
 /* ============================================================

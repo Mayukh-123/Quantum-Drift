@@ -51,7 +51,10 @@
 <div class="app-content">
 
 <header class="page-header">
-  <h1>Delivery Partners</h1>
+  <div class="page-header-top">
+    <h1>Delivery Partners</h1>
+    <span class="live-pill"><span class="live-dot"></span>Live</span>
+  </div>
   <p>Onboard riders and track who's carrying an active load right now.</p>
 </header>
 
@@ -100,8 +103,16 @@
     </form>
   </div>
 
+  <div>
+  <div class="filter-tabs" id="statusFilterTabs">
+    <button type="button" class="filter-tab active" data-status="all">All</button>
+    <button type="button" class="filter-tab" data-status="available">Available</button>
+    <button type="button" class="filter-tab" data-status="busy">Busy</button>
+    <button type="button" class="filter-tab" data-status="offline">Offline</button>
+  </div>
   <div class="partner-grid" id="partnerGrid">
     <p class="loading">Loading partners…</p>
+  </div>
   </div>
 
 </div>
@@ -114,6 +125,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script>
+
+let allPartners = [];
+let currentPartnerFilter = "all";
 
 async function loadPartners() {
   const grid = document.getElementById("partnerGrid");
@@ -128,9 +142,27 @@ async function loadPartners() {
     return;
   }
 
+  allPartners = data || [];
+  updateStats(allPartners);
+  renderPartnerGrid(filteredPartners());
+}
+
+function partnerMatchesFilter(partner, filter) {
+  if (filter === "all") return true;
+  const cls = statusClass(partner.status);
+  if (filter === "busy") return cls === "badge-busy" || cls === "badge-onduty";
+  return cls === "badge-" + filter;
+}
+
+function filteredPartners() {
+  return allPartners.filter(function (p) { return partnerMatchesFilter(p, currentPartnerFilter); });
+}
+
+function renderPartnerGrid(data) {
+  const grid = document.getElementById("partnerGrid");
+
   if (!data || data.length === 0) {
-    grid.innerHTML = "<p class='empty'>No partners onboarded yet.</p>";
-    updateStats([]);
+    grid.innerHTML = "<p class='empty'>No partners match this filter.</p>";
     return;
   }
 
@@ -138,8 +170,16 @@ async function loadPartners() {
   for (let i = 0; i < data.length; i++) {
     grid.appendChild(buildPartnerCard(data[i]));
   }
-  updateStats(data);
 }
+
+document.querySelectorAll("#statusFilterTabs .filter-tab").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    document.querySelectorAll("#statusFilterTabs .filter-tab").forEach(function (b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    currentPartnerFilter = btn.dataset.status;
+    renderPartnerGrid(filteredPartners());
+  });
+});
 
 function updateStats(partners) {
   const total = partners.length;
@@ -149,9 +189,9 @@ function updateStats(partners) {
     if (partners[i].status === "Available") available++;
     active += partners[i].active_deliveries;
   }
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statAvailable").textContent = available;
-  document.getElementById("statActive").textContent = active;
+  animateValue(document.getElementById("statTotal"), total, 600);
+  animateValue(document.getElementById("statAvailable"), available, 600);
+  animateValue(document.getElementById("statActive"), active, 600);
 }
 
 function buildPartnerCard(partner) {

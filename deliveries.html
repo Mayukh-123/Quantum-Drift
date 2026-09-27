@@ -51,9 +51,31 @@
 <div class="app-content">
 
 <header class="page-header">
-  <h1>Deliveries</h1>
+  <div class="page-header-top">
+    <h1>Deliveries</h1>
+    <span class="live-pill"><span class="live-dot"></span>Live</span>
+  </div>
   <p>Assign a new delivery to a partner and track every order's status.</p>
 </header>
+
+<div class="stat-row" id="deliveryStatRow">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8V21H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg></div>
+    <div><div class="stat-value" id="statDelTotal">—</div><div class="stat-label">Total deliveries</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div><div class="stat-value" id="statDelPending">—</div><div class="stat-label">Pending</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+    <div><div class="stat-value" id="statDelTransit">—</div><div class="stat-label">In transit</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+    <div><div class="stat-value" id="statDelDelivered">—</div><div class="stat-label">Delivered</div></div>
+  </div>
+</div>
 
 <div class="layout">
 
@@ -84,6 +106,14 @@
   </div>
 
   <div>
+  <div class="filter-tabs" id="statusFilterTabs">
+    <button type="button" class="filter-tab active" data-status="all">All</button>
+    <button type="button" class="filter-tab" data-status="pending">Pending</button>
+    <button type="button" class="filter-tab" data-status="assigned">Assigned</button>
+    <button type="button" class="filter-tab" data-status="pickedup">Picked up</button>
+    <button type="button" class="filter-tab" data-status="delivered">Delivered</button>
+    <button type="button" class="filter-tab" data-status="cancelled">Cancelled</button>
+  </div>
   <div class="table-wrap">
     <table>
       <thead>
@@ -136,6 +166,9 @@ async function loadPartnerOptions() {
   }
 }
 
+let allDeliveries = [];
+let currentFilter = "all";
+
 async function loadDeliveries() {
   const tbody = document.getElementById("deliveryTableBody");
 
@@ -149,8 +182,35 @@ async function loadDeliveries() {
     return;
   }
 
+  allDeliveries = data || [];
+  updateDeliveryStats(allDeliveries);
+  renderDeliveryRows(filteredDeliveries());
+}
+
+function filteredDeliveries() {
+  if (currentFilter === "all") return allDeliveries;
+  return allDeliveries.filter(function (d) { return statusClass(d.status) === "badge-" + currentFilter; });
+}
+
+function updateDeliveryStats(data) {
+  let pending = 0, transit = 0, delivered = 0;
+  for (let i = 0; i < data.length; i++) {
+    const cls = statusClass(data[i].status);
+    if (cls === "badge-pending") pending++;
+    else if (cls === "badge-assigned" || cls === "badge-pickedup") transit++;
+    else if (cls === "badge-delivered") delivered++;
+  }
+  animateValue(document.getElementById("statDelTotal"), data.length, 600);
+  animateValue(document.getElementById("statDelPending"), pending, 600);
+  animateValue(document.getElementById("statDelTransit"), transit, 600);
+  animateValue(document.getElementById("statDelDelivered"), delivered, 600);
+}
+
+function renderDeliveryRows(data) {
+  const tbody = document.getElementById("deliveryTableBody");
+
   if (!data || data.length === 0) {
-    tbody.innerHTML = "<tr><td colspan='6'>No deliveries yet.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='6'>No deliveries match this filter.</td></tr>";
     return;
   }
 
@@ -169,6 +229,15 @@ async function loadDeliveries() {
     tbody.appendChild(row);
   }
 }
+
+document.querySelectorAll(".filter-tab").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    document.querySelectorAll(".filter-tab").forEach(function (b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    currentFilter = btn.dataset.status;
+    renderDeliveryRows(filteredDeliveries());
+  });
+});
 
 document.getElementById("deliveryForm").addEventListener("submit", async function (e) {
   e.preventDefault();

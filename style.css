@@ -116,6 +116,32 @@ code, .mono{
   flex: 1;
 }
 
+.sidebar-live{
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #8991A0;
+  font-family: 'IBM Plex Mono', monospace;
+  margin-right: 20px;
+}
+
+.sidebar-live::before{
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--status-available);
+  box-shadow: 0 0 0 0 rgba(62, 158, 99, 0.6);
+  animation: livepulse 2.2s ease-out infinite;
+}
+
+@keyframes livepulse{
+  0%{ box-shadow: 0 0 0 0 rgba(62, 158, 99, 0.55); }
+  70%{ box-shadow: 0 0 0 6px rgba(62, 158, 99, 0); }
+  100%{ box-shadow: 0 0 0 0 rgba(62, 158, 99, 0); }
+}
+
 .sidebar-nav a, .sidebar-logout{
   display: flex;
   align-items: center;
@@ -199,6 +225,18 @@ code, .mono{
   pointer-events: none;
 }
 
+.page-header::after{
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 18%;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(255,255,255,0.14) 0 10px, transparent 10px 20px);
+  animation: driftline 6s linear infinite;
+  pointer-events: none;
+}
+
 .page-header h1{
   position: relative;
   font-size: 30px;
@@ -238,16 +276,20 @@ code, .mono{
 
 .stat-card:last-child{ border-right: none; }
 
+/* STAT ICONS — ringed instead of filled, sits better on the dark hero */
+
 .stat-icon{
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1.5px solid rgba(255,255,255,0.14);
+  border-radius: 50%;
 }
 
-.stat-icon svg{ width: 22px; height: 22px; }
+.stat-icon svg{ width: 16px; height: 16px; }
 
 .stat-icon-violet{ color: var(--signal); }
 .stat-icon-green{ color: #6BC98D; }
@@ -366,6 +408,7 @@ input:focus, select:focus{
 }
 
 .btn:hover{ background: var(--amber-dark); color: var(--ink); transform: translateY(-1px); }
+.btn:active{ transform: translateY(0); }
 .btn:disabled{ background: var(--line); color: var(--ink-soft); cursor: default; transform: none; }
 
 .form-error, .form-success{
@@ -400,12 +443,12 @@ input:focus, select:focus{
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  transition: background 0.12s ease, border-left-color 0.12s ease;
+  transition: background 0.12s ease, border-left-width 0.12s ease;
 }
 
 .partner-grid .partner-card:last-child{ border-bottom: none; }
 
-.partner-card:hover{ background: var(--paper); }
+.partner-card:hover{ background: var(--paper); border-left-width: 6px; }
 
 .partner-card.badge-available{ border-left-color: var(--status-available); }
 .partner-card.badge-busy{ border-left-color: var(--status-busy); }
@@ -477,6 +520,15 @@ input:focus, select:focus{
   flex-shrink: 0;
 }
 
+.badge-available::before, .badge-busy::before, .badge-onduty::before, .badge-pending::before, .badge-assigned::before, .badge-pickedup::before{
+  animation: dotbreathe 1.8s ease-in-out infinite;
+}
+
+@keyframes dotbreathe{
+  0%, 100%{ opacity: 0.85; transform: scale(1); }
+  50%{ opacity: 0.4; transform: scale(0.75); }
+}
+
 .badge.badge-available{ background: var(--status-available); }
 .badge.badge-busy{ background: var(--status-busy); }
 .badge.badge-onduty{ background: var(--status-busy); }
@@ -522,7 +574,17 @@ tr:last-child td{ border-bottom: none; }
 
 .loading, .empty, .error{
   color: var(--ink-soft);
-  font-size: 14px;
+  font-size: 13.5px;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.empty{
+  display: block;
+  padding: 28px 22px;
+  text-align: center;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
 }
 
 .error{ color: var(--status-cancelled); }

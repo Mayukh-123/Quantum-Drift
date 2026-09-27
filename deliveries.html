@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deliveries — Quantum Drift</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container">
+    <a href="index.html" class="nav-brand">Quantum<span> Drift</span></a>
+    <div class="nav-links">
+      <a href="index.html">Partners</a>
+      <a href="deliveries.html">Deliveries</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="container">
+    <h1>Deliveries</h1>
+    <p>Assign a new delivery to a partner and track every order's status.</p>
+  </div>
+</header>
+
+<main class="container">
+  <div class="layout">
+
+    <div class="panel">
+      <h2>Assign a delivery</h2>
+      <form id="deliveryForm">
+        <label for="customerName">Customer name</label>
+        <input type="text" id="customerName" required>
+
+        <label for="customerPhone">Customer phone</label>
+        <input type="tel" id="customerPhone" required>
+
+        <label for="pickup">Pickup address</label>
+        <input type="text" id="pickup" required>
+
+        <label for="drop">Drop address</label>
+        <input type="text" id="drop" required>
+
+        <label for="partner">Assign to partner</label>
+        <select id="partner" required>
+          <option value="">Loading partners…</option>
+        </select>
+
+        <button type="submit" class="btn" id="submitBtn">Assign delivery</button>
+        <p class="form-error" id="formError"></p>
+        <p class="form-success" id="formSuccess"></p>
+      </form>
+    </div>
+
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Customer</th>
+            <th>Partner</th>
+            <th>Route</th>
+            <th>Status</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="deliveryTableBody">
+          <tr><td colspan="6">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</main>
+
+<footer>Quantum Drift — Delivery Partner Management System</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+
+async function loadPartnerOptions() {
+  const select = document.getElementById("partner");
+
+  const { data, error } = await sb
+    .from("partners")
+    .select("id, name, status")
+    .order("name", { ascending: true });
+
+  if (error || !data) {
+    select.innerHTML = "<option value=''>Could not load partners</option>";
+    return;
+  }
+
+  select.innerHTML = "";
+  for (let i = 0; i < data.length; i++) {
+    const opt = document.createElement("option");
+    opt.value = data[i].id;
+    opt.textContent = data[i].name + " (" + data[i].status + ")";
+    select.appendChild(opt);
+  }
+}
+
+async function loadDeliveries() {
+  const tbody = document.getElementById("deliveryTableBody");
+
+  const { data, error } = await sb
+    .from("deliveries")
+    .select("id, customer_name, pickup_address, drop_address, status, created_at, partners(name)")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    tbody.innerHTML = "<tr><td colspan='6' class='error'>" + error.message + "</td></tr>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='6'>No deliveries yet.</td></tr>";
+    return;
+  }
+
+  tbody.innerHTML = "";
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const partnerName = d.partners ? d.partners.name : "Unassigned";
+    const row = document.createElement("tr");
+    row.innerHTML =
+      "<td class='mono'>" + d.id.slice(0, 8).toUpperCase() + "</td>" +
+      "<td>" + d.customer_name + "</td>" +
+      "<td>" + partnerName + "</td>" +
+      "<td>" + d.pickup_address + " → " + d.drop_address + "</td>" +
+      "<td><span class='badge " + statusClass(d.status) + "'>" + d.status + "</span></td>" +
+      "<td>" + formatDateTime(d.created_at) + "</td>";
+    tbody.appendChild(row);
+  }
+}
+
+document.getElementById("deliveryForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const btn = document.getElementById("submitBtn");
+  const errorEl = document.getElementById("formError");
+  const successEl = document.getElementById("formSuccess");
+  btn.disabled = true;
+  btn.textContent = "Assigning…";
+  errorEl.textContent = "";
+  successEl.textContent = "";
+
+  const customerName = document.getElementById("customerName").value.trim();
+  const customerPhone = document.getElementById("customerPhone").value.trim();
+  const pickup = document.getElementById("pickup").value.trim();
+  const drop = document.getElementById("drop").value.trim();
+  const partnerId = document.getElementById("partner").value;
+
+  const { error } = await sb
+    .from("deliveries")
+    .insert([{
+      customer_name: customerName,
+      customer_phone: customerPhone,
+      pickup_address: pickup,
+      drop_address: drop,
+      partner_id: partnerId,
+      status: "Pending"
+    }]);
+
+  btn.disabled = false;
+  btn.textContent = "Assign delivery";
+
+  if (error) {
+    errorEl.textContent = "Something went wrong — " + error.message;
+    return;
+  }
+
+  successEl.textContent = "Delivery assigned successfully.";
+  document.getElementById("deliveryForm").reset();
+  loadPartnerOptions();
+  loadDeliveries();
+});
+
+loadPartnerOptions();
+loadDeliveries();
+</script>
+</body>
+</html>

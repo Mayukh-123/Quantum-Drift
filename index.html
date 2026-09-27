@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quantum Drift — Delivery Partner Management</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="container">
+    <a href="index.html" class="nav-brand">Quantum<span> Drift</span></a>
+    <div class="nav-links">
+      <a href="index.html">Partners</a>
+      <a href="deliveries.html">Deliveries</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-header">
+  <div class="container">
+    <h1>Delivery Partners</h1>
+    <p>Onboard riders and track who's carrying an active load right now.</p>
+  </div>
+</header>
+
+<main class="container">
+  <div class="layout">
+
+    <div class="panel">
+      <h2>Add a partner</h2>
+      <form id="partnerForm">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required>
+
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+
+        <label for="vehicleType">Vehicle type</label>
+        <select id="vehicleType" required>
+          <option value="Bike">Bike</option>
+          <option value="Scooter">Scooter</option>
+          <option value="Van">Van</option>
+        </select>
+
+        <label for="city">City</label>
+        <input type="text" id="city" required>
+
+        <button type="submit" class="btn" id="submitBtn">Add partner</button>
+        <p class="form-error" id="formError"></p>
+        <p class="form-success" id="formSuccess"></p>
+      </form>
+    </div>
+
+    <div class="partner-grid" id="partnerGrid">
+      <p class="loading">Loading partners…</p>
+    </div>
+
+  </div>
+</main>
+
+<footer>Quantum Drift — Delivery Partner Management System</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+
+async function loadPartners() {
+  const grid = document.getElementById("partnerGrid");
+
+  const { data, error } = await sb
+    .from("partner_workload")
+    .select("*")
+    .order("joined_at", { ascending: false });
+
+  if (error) {
+    grid.innerHTML = "<p class='error'>Could not load partners — " + error.message + "</p>";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    grid.innerHTML = "<p class='empty'>No partners onboarded yet.</p>";
+    return;
+  }
+
+  grid.innerHTML = "";
+  for (let i = 0; i < data.length; i++) {
+    grid.appendChild(buildPartnerCard(data[i]));
+  }
+}
+
+function buildPartnerCard(partner) {
+  const card = document.createElement("div");
+  card.className = "partner-card";
+
+  card.innerHTML =
+    '<div>' +
+      '<div class="partner-name">' + partner.name + '</div>' +
+      '<div class="partner-meta">' + partner.vehicle_type + ' • ' + partner.city + ' • ' + partner.phone + '</div>' +
+    '</div>' +
+    '<div class="partner-right">' +
+      '<div class="workload">' + partner.active_deliveries + ' active</div>' +
+      '<span class="badge ' + statusClass(partner.status) + '">' + partner.status + '</span>' +
+    '</div>';
+
+  return card;
+}
+
+document.getElementById("partnerForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const btn = document.getElementById("submitBtn");
+  const errorEl = document.getElementById("formError");
+  const successEl = document.getElementById("formSuccess");
+  btn.disabled = true;
+  btn.textContent = "Adding…";
+  errorEl.textContent = "";
+  successEl.textContent = "";
+
+  const name = document.getElementById("name").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const vehicleType = document.getElementById("vehicleType").value;
+  const city = document.getElementById("city").value.trim();
+
+  const { error } = await sb
+    .from("partners")
+    .insert([{ name: name, phone: phone, email: email, vehicle_type: vehicleType, city: city }]);
+
+  btn.disabled = false;
+  btn.textContent = "Add partner";
+
+  if (error) {
+    errorEl.textContent = "Something went wrong — " + error.message;
+    return;
+  }
+
+  successEl.textContent = "Partner added successfully.";
+  document.getElementById("partnerForm").reset();
+  loadPartners();
+});
+
+loadPartners();
+</script>
+</body>
+</html>

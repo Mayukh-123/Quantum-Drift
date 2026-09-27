@@ -14,6 +14,7 @@
     <div class="nav-links">
       <a href="index.html">Partners</a>
       <a href="deliveries.html">Deliveries</a>
+      <a href="#" id="logoutLink">Logout</a>
     </div>
   </div>
 </nav>
@@ -24,6 +25,14 @@
     <p>Onboard riders and track who's carrying an active load right now.</p>
   </div>
 </header>
+
+<div class="container">
+  <div class="stat-row" id="statRow">
+    <div class="stat-card"><div class="stat-value" id="statTotal">—</div><div class="stat-label">Total partners</div></div>
+    <div class="stat-card"><div class="stat-value" id="statAvailable">—</div><div class="stat-label">Available now</div></div>
+    <div class="stat-card"><div class="stat-value" id="statActive">—</div><div class="stat-label">Active deliveries</div></div>
+  </div>
+</div>
 
 <main class="container">
   <div class="layout">
@@ -84,6 +93,7 @@ async function loadPartners() {
 
   if (!data || data.length === 0) {
     grid.innerHTML = "<p class='empty'>No partners onboarded yet.</p>";
+    updateStats([]);
     return;
   }
 
@@ -91,11 +101,25 @@ async function loadPartners() {
   for (let i = 0; i < data.length; i++) {
     grid.appendChild(buildPartnerCard(data[i]));
   }
+  updateStats(data);
+}
+
+function updateStats(partners) {
+  const total = partners.length;
+  let available = 0;
+  let active = 0;
+  for (let i = 0; i < partners.length; i++) {
+    if (partners[i].status === "Available") available++;
+    active += partners[i].active_deliveries;
+  }
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statAvailable").textContent = available;
+  document.getElementById("statActive").textContent = active;
 }
 
 function buildPartnerCard(partner) {
   const card = document.createElement("div");
-  card.className = "partner-card";
+  card.className = "partner-card " + statusClass(partner.status);
 
   card.innerHTML =
     '<div>' +
@@ -144,7 +168,16 @@ document.getElementById("partnerForm").addEventListener("submit", async function
   loadPartners();
 });
 
-loadPartners();
+document.getElementById("logoutLink").addEventListener("click", function (e) {
+  e.preventDefault();
+  logout();
+});
+
+(async function init() {
+  const session = await requireAuth();
+  if (!session) return;
+  loadPartners();
+})();
 </script>
 </body>
 </html>

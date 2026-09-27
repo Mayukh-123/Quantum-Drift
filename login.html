@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Quantum Drift</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="auth-screen">
+  <div class="auth-brand">
+    <div class="auth-brand-mark">Q</div>
+    <h1>Quantum<span> Drift</span></h1>
+    <p>Manage delivery partners and dispatch orders from one place.</p>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-tabs">
+      <button type="button" class="auth-tab active" id="tabSignIn">Sign in</button>
+      <button type="button" class="auth-tab" id="tabSignUp">Create account</button>
+    </div>
+
+    <form id="authForm">
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" required minlength="6">
+
+      <button type="submit" class="btn" id="authBtn">Sign in</button>
+      <p class="form-error" id="authError"></p>
+      <p class="form-success" id="authSuccess"></p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+
+let mode = "signin";
+
+const tabSignIn = document.getElementById("tabSignIn");
+const tabSignUp = document.getElementById("tabSignUp");
+const authBtn = document.getElementById("authBtn");
+const errorEl = document.getElementById("authError");
+const successEl = document.getElementById("authSuccess");
+
+tabSignIn.addEventListener("click", function () {
+  mode = "signin";
+  tabSignIn.classList.add("active");
+  tabSignUp.classList.remove("active");
+  authBtn.textContent = "Sign in";
+  errorEl.textContent = "";
+  successEl.textContent = "";
+});
+
+tabSignUp.addEventListener("click", function () {
+  mode = "signup";
+  tabSignUp.classList.add("active");
+  tabSignIn.classList.remove("active");
+  authBtn.textContent = "Create account";
+  errorEl.textContent = "";
+  successEl.textContent = "";
+});
+
+document.getElementById("authForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  authBtn.disabled = true;
+  errorEl.textContent = "";
+  successEl.textContent = "";
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (mode === "signin") {
+    authBtn.textContent = "Signing in…";
+    const { error } = await sb.auth.signInWithPassword({ email: email, password: password });
+    authBtn.disabled = false;
+    authBtn.textContent = "Sign in";
+
+    if (error) {
+      errorEl.textContent = error.message;
+      return;
+    }
+    window.location.href = "index.html";
+  } else {
+    authBtn.textContent = "Creating…";
+    const { error } = await sb.auth.signUp({ email: email, password: password });
+    authBtn.disabled = false;
+    authBtn.textContent = "Create account";
+
+    if (error) {
+      errorEl.textContent = error.message;
+      return;
+    }
+    successEl.textContent = "Account created. If email confirmation is on, check your inbox — otherwise just sign in now.";
+  }
+});
+
+</script>
+</body>
+</html>

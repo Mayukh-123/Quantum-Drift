@@ -14,6 +14,7 @@
     <div class="nav-links">
       <a href="index.html">Partners</a>
       <a href="deliveries.html">Deliveries</a>
+      <a href="#" id="logoutLink">Logout</a>
     </div>
   </div>
 </nav>
@@ -179,8 +180,17 @@ document.getElementById("deliveryForm").addEventListener("submit", async functio
   loadDeliveries();
 });
 
-loadPartnerOptions();
-loadDeliveries();
+document.getElementById("logoutLink").addEventListener("click", function (e) {
+  e.preventDefault();
+  logout();
+});
+
+(async function init() {
+  const session = await requireAuth();
+  if (!session) return;
+  loadPartnerOptions();
+  loadDeliveries();
+})();
 </script>
 </body>
 </html>

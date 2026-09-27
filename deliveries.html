@@ -13,6 +13,20 @@
 
 <div class="app-shell">
 
+<input type="checkbox" id="navToggle" class="nav-toggle-checkbox">
+
+<div class="mobile-topbar">
+  <a href="index.html" class="mobile-brand">
+    <span class="sidebar-mark">Q</span>
+    <span>Quantum<em>Drift</em></span>
+  </a>
+  <label for="navToggle" class="nav-toggle-btn" aria-label="Toggle navigation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </label>
+</div>
+
+<label for="navToggle" class="nav-overlay" aria-hidden="true"></label>
+
 <aside class="sidebar">
   <a href="index.html" class="sidebar-brand">
     <span class="sidebar-mark">Q</span>
@@ -70,6 +84,7 @@
   </div>
 
   <div>
+  <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -85,6 +100,7 @@
         <tr><td colspan="6">Loading…</td></tr>
       </tbody>
     </table>
+  </div>
   </div>
 
 </div>
@@ -144,12 +160,12 @@ async function loadDeliveries() {
     const partnerName = d.partners ? d.partners.name : "Unassigned";
     const row = document.createElement("tr");
     row.innerHTML =
-      "<td class='mono'>" + d.id.slice(0, 8).toUpperCase() + "</td>" +
-      "<td>" + d.customer_name + "</td>" +
-      "<td>" + partnerName + "</td>" +
-      "<td>" + d.pickup_address + " → " + d.drop_address + "</td>" +
-      "<td><span class='badge " + statusClass(d.status) + "'>" + d.status + "</span></td>" +
-      "<td>" + formatDateTime(d.created_at) + "</td>";
+      "<td class='mono' data-label='ID'>" + d.id.slice(0, 8).toUpperCase() + "</td>" +
+      "<td data-label='Customer'>" + d.customer_name + "</td>" +
+      "<td data-label='Partner'>" + partnerName + "</td>" +
+      "<td data-label='Route'>" + d.pickup_address + " → " + d.drop_address + "</td>" +
+      "<td data-label='Status'><span class='badge " + statusClass(d.status) + "'>" + d.status + "</span></td>" +
+      "<td data-label='Created'>" + formatDateTime(d.created_at) + "</td>";
     tbody.appendChild(row);
   }
 }

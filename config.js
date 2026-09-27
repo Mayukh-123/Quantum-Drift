@@ -30,6 +30,47 @@ function animateValue(el, endValue, duration) {
   requestAnimationFrame(step);
 }
 
+// Floating confirmation toast — used right after a partner is added or a
+// delivery is assigned, on top of the inline form-success text.
+function ensureToastStack() {
+  let stack = document.getElementById("toastStack");
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "toastStack";
+    stack.className = "toast-stack";
+    stack.setAttribute("aria-live", "polite");
+    stack.setAttribute("aria-atomic", "true");
+    document.body.appendChild(stack);
+  }
+  return stack;
+}
+
+function showToast(title, message, duration) {
+  const stack = ensureToastStack();
+
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.innerHTML =
+    '<span class="toast-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l4.5 4.5L19.5 7"/></svg></span>' +
+    '<div class="toast-body">' +
+      '<p class="toast-title">' + title + '</p>' +
+      '<p class="toast-message">' + message + '</p>' +
+    '</div>' +
+    '<button type="button" class="toast-dismiss" aria-label="Dismiss">&times;</button>';
+
+  stack.appendChild(toast);
+
+  function dismiss() {
+    if (toast.dataset.leaving) return;
+    toast.dataset.leaving = "true";
+    toast.classList.add("toast-leaving");
+    setTimeout(function () { toast.remove(); }, 300);
+  }
+
+  toast.querySelector(".toast-dismiss").addEventListener("click", dismiss);
+  setTimeout(dismiss, duration || 4200);
+}
+
 // ---- Auth guard ----
 // Call this at the top of any page that should require a logged-in admin.
 // Redirects to login.html if there's no active session.

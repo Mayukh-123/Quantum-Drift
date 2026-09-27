@@ -246,6 +246,7 @@ document.getElementById("partnerForm").addEventListener("submit", async function
   }
 
   successEl.textContent = "Partner added successfully.";
+  showToast("Partner added", name + " has been added as a delivery partner.");
   document.getElementById("partnerForm").reset();
   loadPartners();
 });

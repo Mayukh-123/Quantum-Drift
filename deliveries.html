@@ -254,7 +254,11 @@ document.getElementById("deliveryForm").addEventListener("submit", async functio
   const customerPhone = document.getElementById("customerPhone").value.trim();
   const pickup = document.getElementById("pickup").value.trim();
   const drop = document.getElementById("drop").value.trim();
-  const partnerId = document.getElementById("partner").value;
+  const partnerSelect = document.getElementById("partner");
+  const partnerId = partnerSelect.value;
+  const partnerName = partnerSelect.options[partnerSelect.selectedIndex]
+    ? partnerSelect.options[partnerSelect.selectedIndex].text.replace(/\s*\([^)]*\)\s*$/, "")
+    : "the partner";
 
   const { error } = await sb
     .from("deliveries")
@@ -276,6 +280,7 @@ document.getElementById("deliveryForm").addEventListener("submit", async functio
   }
 
   successEl.textContent = "Delivery assigned successfully.";
+  showToast("Delivery assigned", "Assigned to " + partnerName + ".");
   document.getElementById("deliveryForm").reset();
   loadPartnerOptions();
   loadDeliveries();
